@@ -1,6 +1,7 @@
 import { createWebHistory, createRouter } from 'vue-router'
 /* Layout */
 import Layout from '@/layout'
+import FrontLayout from '@/layout/FrontLayout'
 
 /**
  * Note: 路由配置项
@@ -26,6 +27,77 @@ import Layout from '@/layout'
 
 // 公共路由
 export const constantRoutes = [
+  {
+    path: '/',
+    component: FrontLayout,
+    redirect: '/index',
+    children: [
+      {
+        path: 'index',
+        component: () => import('@/views/portal/index.vue'),
+        name: 'Portal',
+        meta: { title: '首页', icon: 'dashboard', noNeedLogin: true }
+      },
+      {
+        path: 'news/:id',
+        component: () => import('@/views/portal/news/detail'),
+        name: 'NewsDetail',
+        meta: { title: '新闻详情', noNeedLogin: true }
+      },
+      {
+        path: 'news',
+        component: () => import('@/views/portal/news/index'),
+        name: 'News',
+        meta: { title: '新闻动态', noNeedLogin: true }
+      },
+      {
+        path: 'products',
+        component: () => import('@/views/portal/products/index'),
+        name: 'Products',
+        meta: { title: '产品展示', noNeedLogin: true }
+      },
+      {
+        path: 'about',
+        component: () => import('@/views/portal/about/index'),
+        name: 'About',
+        meta: { title: '关于我们', noNeedLogin: true }
+      },
+      {
+        path: 'contact',
+        component: () => import('@/views/portal/contact/index'),
+        name: 'Contact',
+        meta: { title: '联系我们', noNeedLogin: true }
+      },
+      {
+        path: 'mock',
+        component: () => import('@/views/portal/mock/index.vue'),
+        name: 'Mock',
+      },
+      {
+        path: 'mock/:type',
+        component: () => import('@/views/portal/mock/detail.vue'),
+        name: 'MockDetail',
+      },
+      {
+        path: 'mock/:type/:subtype',
+        component: () => import('@/views/portal/mock/subDetail.vue'),
+        name: 'MockSubDetail',
+      },
+    ]
+  },
+  {
+    path: '/admin',
+    component: Layout,
+    redirect: '/admin/index',
+    children: [
+      {
+        path: 'index',
+        component: () => import('@/views/index'),
+        name: 'AdminIndex',
+        meta: { title: '管理首页', icon: 'dashboard', affix: true }
+      }
+    ]
+  },
   {
     path: '/redirect',
     component: Layout,
@@ -56,19 +128,6 @@ export const constantRoutes = [
     path: '/401',
     component: () => import('@/views/error/401'),
     hidden: true
-  },
-  {
-    path: '',
-    component: Layout,
-    redirect: '/index',
-    children: [
-      {
-        path: '/index',
-        component: () => import('@/views/index'),
-        name: 'Index',
-        meta: { title: '首页', icon: 'dashboard', affix: true }
-      }
-    ]
   },
   {
     path: '/user',

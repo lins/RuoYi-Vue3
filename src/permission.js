@@ -11,22 +11,34 @@ import usePermissionStore from '@/store/modules/permission'
 
 NProgress.configure({ showSpinner: false })
 
-const whiteList = ['/login', '/register']
+const whiteList = ['/login', '/register', '/', '/index', '/news', '/about', '/products', '/contact', '/news/*']
 
 const isWhiteList = (path) => {
-  return whiteList.some(pattern => isPathMatch(pattern, path))
+  return whiteList.some(pattern => {
+    if (pattern.endsWith('/*')) {
+      const basePath = pattern.slice(0, -2)
+      return path.startsWith(basePath)
+    }
+    return path === pattern
+  })
 }
 
 router.beforeEach((to, from, next) => {
   NProgress.start()
+  
+  // 判断该路由是否需要登录权限
+  if (to.meta.noNeedLogin) {
+    next()
+    NProgress.done()
+    return
+  }
+
   if (getToken()) {
     to.meta.title && useSettingsStore().setTitle(to.meta.title)
     /* has token*/
     if (to.path === '/login') {
       next({ path: '/' })
       NProgress.done()
-    } else if (isWhiteList(to.path)) {
-      next()
     } else {
       if (useUserStore().roles.length === 0) {
         isRelogin.show = true
