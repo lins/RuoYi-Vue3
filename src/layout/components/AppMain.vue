@@ -14,6 +14,7 @@
 <script setup>
 import iframeToggle from "./IframeToggle/index"
 import useTagsViewStore from '@/store/modules/tagsView'
+import { useRoute } from 'vue-router'
 
 const route = useRoute()
 const tagsViewStore = useTagsViewStore()
@@ -22,7 +23,7 @@ onMounted(() => {
   addIframe()
 })
 
-watch((route) => {
+watch(() => route.path, () => {
   addIframe()
 })
 
@@ -80,4 +81,3 @@ function addIframe() {
   border-radius: 3px;
 }
 </style>
-

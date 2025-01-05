@@ -81,10 +81,9 @@
     <!-- 试卷列表 -->
     <div class="exam-list">
       <el-table 
-        :data="filteredExams" 
+        :data="examList" 
         style="width: 100%"
-        :max-height="null"
-        :scrollbar-always-on="false"
+        v-loading="loading"
       >
         <el-table-column prop="name" label="试卷名称" min-width="300">
           <template #default="{ row }">
@@ -93,12 +92,22 @@
         </el-table-column>
         <el-table-column prop="time" label="考试时间" width="180">
           <template #default="{ row }">
-            {{ row.year }}年{{ row.month }}月真题
+            {{ row.year }}年{{ row.month }}月
           </template>
         </el-table-column>
         <el-table-column prop="duration" label="考试时长" width="120">
           <template #default="{ row }">
             {{ row.duration }}分钟
+          </template>
+        </el-table-column>
+        <el-table-column prop="questionCount" label="题目数量" width="120">
+          <template #default="{ row }">
+            {{ row.questionCount }}题
+          </template>
+        </el-table-column>
+        <el-table-column label="级别" width="120">
+          <template #default="{ row }">
+            {{ getLevelText(row.level) }}
           </template>
         </el-table-column>
         <el-table-column label="操作" width="200">
@@ -108,23 +117,64 @@
           </template>
         </el-table-column>
       </el-table>
+      
+      <!-- 分页 -->
+      <div class="pagination-container">
+        <el-pagination
+          v-model:current-page="queryParams.pageNum"
+          v-model:page-size="queryParams.pageSize"
+          :total="total"
+          :page-sizes="[10, 20, 50, 100]"
+          layout="total, sizes, prev, pager, next, jumper"
+          @size-change="handleSizeChange"
+          @current-change="handleCurrentChange"
+        />
+      </div>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted, computed, watch, getCurrentInstance } from 'vue'
+import { ref, onMounted, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import useUserStore from '@/store/modules/user'
+import { listExamPaper } from '@/api/exam/paper'
 
 const userStore = useUserStore()
 const route = useRoute()
 const router = useRouter()
-const { proxy } = getCurrentInstance()
 
+const loading = ref(false)
+const total = ref(0)
+const examList = ref([])
 const parentTitle = ref('')
 const currentExam = ref({})
+
+// 查询参数
+const queryParams = ref({
+  pageNum: 1,
+  pageSize: 10,
+  year: undefined,
+  month: undefined,
+  level: undefined,
+  typeCode: undefined,
+  status: '0'  // 只查询正常状态的试卷
+})
+
+// 筛选选项
+const years = [2025, 2024, 2023, 2022, 2021, 2020, 2019]
+const months = Array.from({ length: 12 }, (_, i) => i + 1)
+const levels = [
+  { value: 1, label: '一级' },
+  { value: 2, label: '二级' },
+  { value: 3, label: '三级' },
+  { value: 4, label: '四级' },
+  // { value: 5, label: '五级' },
+  // { value: 6, label: '六级' },
+  // { value: 7, label: '七级' },
+  // { value: 8, label: '八级' }
+]
 
 // 筛选表单
 const filterForm = ref({
@@ -133,200 +183,19 @@ const filterForm = ref({
   level: ''
 })
 
-// 筛选选项
-const years = [2025, 2024, 2023, 2022]
-const months = Array.from({ length: 12 }, (_, i) => i + 1)
-const levels = [
-  { value: 1, label: '一级' },
-  { value: 2, label: '二级' },
-  { value: 3, label: '三级' },
-  { value: 4, label: '四级' }
-]
-
-// 试卷列表
-const examList = ref([
-  {
-    id: 1,
-    name: '图形化软件编程等级考试一级',
-    year: 2024,
-    month: 12,
-    level: 1,
-    duration: 60
-  },
-  {
-    id: 2,
-    name: '图形化软件编程等级考试一级',
-    year: 2024,
-    month: 11,
-    level: 1,
-    duration: 60
-  },
-  {
-    id: 3,
-    name: '图形化软件编程等级考试二级',
-    year: 2024,
-    month: 12,
-    level: 2,
-    duration: 90
-  },
-  {
-    id: 4,
-    name: '图形化软件编程等级考试二级',
-    year: 2024,
-    month: 10,
-    level: 2,
-    duration: 90
-  },
-  {
-    id: 5,
-    name: '图形化软件编程等级考试三级',
-    year: 2023,
-    month: 12,
-    level: 3,
-    duration: 120
-  },
-  {
-    id: 6,
-    name: '图形化软件编程等级考试三级',
-    year: 2023,
-    month: 11,
-    level: 3,
-    duration: 120
-  },
-  {
-    id: 7,
-    name: '图形化软件编程等级考试一级',
-    year: 2023,
-    month: 10,
-    level: 1,
-    duration: 60
-  },
-  {
-    id: 8,
-    name: '图形化软件编程等级考试二级',
-    year: 2023,
-    month: 9,
-    level: 2,
-    duration: 90
-  },
-  {
-    id: 9,
-    name: '图形化软件编程等级考试三级',
-    year: 2023,
-    month: 8,
-    level: 3,
-    duration: 120
-  },
-  {
-    id: 10,
-    name: '图形化软件编程等级考试一级',
-    year: 2023,
-    month: 7,
-    level: 1,
-    duration: 60
-  },
-  {
-    id: 11,
-    name: '图形化软件编程等级考试二级',
-    year: 2023,
-    month: 6,
-    level: 2,
-    duration: 90
-  },
-  {
-    id: 12,
-    name: '图形化软件编程等级考试三级',
-    year: 2023,
-    month: 5,
-    level: 3,
-    duration: 120
-  },
-  {
-    id: 13,
-    name: '图形化软件编程等级考试一级',
-    year: 2023,
-    month: 4,
-    level: 1,
-    duration: 60
-  },
-  {
-    id: 14,
-    name: '图形化软件编程等级考试二级',
-    year: 2023,
-    month: 3,
-    level: 2,
-    duration: 90
-  },
-  {
-    id: 15,
-    name: '图形化软件编程等级考试三级',
-    year: 2023,
-    month: 2,
-    level: 3,
-    duration: 120
-  },
-  {
-    id: 16,
-    name: '图形化软件编程等级考试一级',
-    year: 2023,
-    month: 1,
-    level: 1,
-    duration: 60
-  },
-  {
-    id: 17,
-    name: '图形化软件编程等级考试二级',
-    year: 2022,
-    month: 12,
-    level: 2,
-    duration: 90
-  },
-  {
-    id: 18,
-    name: '图形化软件编程等级考试三级',
-    year: 2022,
-    month: 11,
-    level: 3,
-    duration: 120
+// 级别转换函数
+const getLevelText = (level) => {
+  const levelMap = {
+    1: '一级',
+    2: '二级',
+    3: '三级',
+    4: '四级',
+    5: '五级',
+    6: '六级',
+    7: '七级',
+    8: '八级'
   }
-])
-
-// 筛选后的试卷列表
-const filteredExams = computed(() => {
-  return examList.value.filter(exam => {
-    const yearMatch = !filterForm.value.year || exam.year === filterForm.value.year
-    const monthMatch = !filterForm.value.month || exam.month === filterForm.value.month
-    const levelMatch = !filterForm.value.level || exam.level === filterForm.value.level
-    return yearMatch && monthMatch && levelMatch
-  })
-})
-
-// 筛选方法
-const handleFilter = () => {
-  // 筛选逻辑已通过计算属性实现
-}
-
-// 重置筛选
-const resetFilter = () => {
-  filterForm.value = {
-    year: '',
-    month: '',
-    level: ''
-  }
-}
-
-// 浏览试题
-const previewExam = (exam) => {
-  router.push({
-    path: `/mock/${route.params.type}/${route.params.subtype}/preview/${exam.id}`
-  })
-}
-
-// 开始考试
-const startExam = (exam) => {
-  router.push({
-    path: `/mock/${route.params.type}/${route.params.subtype}/test/${exam.id}`
-  })
+  return levelMap[level] || '未知级别'
 }
 
 // 获取考试基本信息
@@ -402,6 +271,58 @@ const examData = {
   }
 }
 
+// 监听筛选条件变化
+watch(filterForm, (newVal) => {
+  queryParams.value = {
+    ...queryParams.value,
+    pageNum: 1,
+    year: newVal.year || undefined,
+    month: newVal.month || undefined,
+    level: newVal.level || undefined
+  }
+  getList()
+}, { deep: true })
+
+// 获取试卷列表
+const getList = async () => {
+  loading.value = true
+  try {
+    const res = await listExamPaper(queryParams.value)
+    examList.value = res.rows
+    total.value = res.total
+  } catch (error) {
+    console.error('获取试卷列表失败:', error)
+  } finally {
+    loading.value = false
+  }
+}
+
+// 处理每页显示数量变化
+const handleSizeChange = (val) => {
+  queryParams.value.pageSize = val
+  getList()
+}
+
+// 处理页码变化
+const handleCurrentChange = (val) => {
+  queryParams.value.pageNum = val
+  getList()
+}
+
+// 浏览试题
+const previewExam = (exam) => {
+  router.push({
+    path: `/mock/${route.params.type}/${route.params.subtype}/preview/${exam.id}`
+  })
+}
+
+// 开始考试
+const startExam = (exam) => {
+  router.push({
+    path: `/mock/${route.params.type}/${route.params.subtype}/test/${exam.id}`
+  })
+}
+
 // 处理开始考试
 const handleStartExam = (exam) => {
   if (!userStore.token) {
@@ -424,6 +345,10 @@ const initExamInfo = () => {
       }
     }
   }
+  
+  // 设置考试类型编码
+  queryParams.value.typeCode = `${type}_${subtype}`.toUpperCase()
+  getList()
 }
 
 onMounted(() => {
@@ -435,8 +360,7 @@ watch(
   () => route.params,
   () => {
     initExamInfo()
-  },
-  { immediate: true }
+  }
 )
 </script>
 
@@ -527,11 +451,6 @@ watch(
     :deep(.el-table) {
       --el-table-header-bg-color: #f5f7fa;
       
-      // 移除表格的内部滚动条
-      .el-table__body-wrapper {
-        overflow-y: visible;
-      }
-      
       th {
         font-weight: 600;
         color: #333;
@@ -551,6 +470,11 @@ watch(
         margin-left: 12px;
       }
     }
+  }
+  
+  .pagination-container {
+    margin-top: 20px;
+    text-align: center;
   }
 }
 </style>

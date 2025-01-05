@@ -39,34 +39,34 @@ export const constantRoutes = [
         meta: { title: '首页', icon: 'dashboard', noNeedLogin: true }
       },
       {
-        path: 'news/:id',
-        component: () => import('@/views/portal/news/detail'),
-        name: 'NewsDetail',
-        meta: { title: '新闻详情', noNeedLogin: true }
-      },
-      {
         path: 'news',
         component: () => import('@/views/portal/news/index'),
         name: 'News',
-        meta: { title: '新闻动态', noNeedLogin: true }
+        meta: { title: '新闻列表', icon: 'list', noNeedLogin: true }
+      },
+      {
+        path: 'news/:id',
+        component: () => import('@/views/portal/news/detail'),
+        name: 'NewsDetail',
+        meta: { title: '新闻详情', icon: 'article', noNeedLogin: true }
       },
       {
         path: 'products',
         component: () => import('@/views/portal/products/index'),
         name: 'Products',
-        meta: { title: '产品展示', noNeedLogin: true }
+        meta: { title: '产品展示', icon: 'product', noNeedLogin: true }
       },
       {
         path: 'about',
         component: () => import('@/views/portal/about/index'),
         name: 'About',
-        meta: { title: '关于我们', noNeedLogin: true }
+        meta: { title: '关于我们', icon: 'peoples', noNeedLogin: true }
       },
       {
         path: 'contact',
         component: () => import('@/views/portal/contact/index'),
         name: 'Contact',
-        meta: { title: '联系我们', noNeedLogin: true }
+        meta: { title: '联系我们', icon: 'phone', noNeedLogin: true }
       },
       {
         path: 'mock',
