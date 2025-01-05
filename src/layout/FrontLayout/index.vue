@@ -12,7 +12,7 @@
             <el-icon><home-filled /></el-icon>首页
           </router-link>
           <router-link to="/mock" class="nav-item" :class="{ active: route.path === '/mock' }">
-            <el-icon><document-copy /></el-icon>模拟测试
+            <el-icon><document-copy /></el-icon>真题测试
           </router-link>
           <router-link to="/news" class="nav-item" :class="{ active: route.path === '/news' }">
             <el-icon><goods /></el-icon>新闻动态
@@ -88,12 +88,16 @@
 
     <!-- 登录弹窗 -->
     <el-dialog
-      v-model="loginVisible"
+      v-model="userStore.loginVisible"
       title="欢迎登录"
       width="400px"
       :show-close="true"
       :close-on-click-modal="false"
+      :modal="false"
+      :append-to-body="true"
+      :lock-scroll="false"
       class="custom-dialog"
+      @open="handleDialogOpen"
       destroy-on-close
     >
       <el-form ref="loginFormRef" :model="loginForm" :rules="loginRules" class="login-form">
@@ -158,6 +162,9 @@
       title="用户注册"
       width="400px"
       :show-close="true"
+      :modal="false"
+      :append-to-body="true"
+      :lock-scroll="false"
       :close-on-click-modal="false"
       class="custom-dialog"
       destroy-on-close
@@ -229,7 +236,7 @@
 </template>
 
 <script setup>
-import { ref, getCurrentInstance, watch } from 'vue'
+import { ref, getCurrentInstance, watch, nextTick } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { User, Lock, Picture, ArrowDown, SwitchButton, HomeFilled, Goods, InfoFilled, Message, DocumentCopy } from '@element-plus/icons-vue'
 import { getCodeImg, login, register, logout } from "@/api/login"
@@ -245,7 +252,6 @@ const { proxy } = getCurrentInstance()
 const userStore = useUserStore()
 
 // 登录相关
-const loginVisible = ref(false)
 const loginFormRef = ref()
 const loading = ref(false)
 const captchaEnabled = ref(true)
@@ -312,13 +318,41 @@ const registerRules = {
 }
 
 const showLoginDialog = () => {
-  loginVisible.value = true
-  getCode()
-  getCookie()
+  userStore.loginVisible = true
 }
 
 const showRegisterDialog = () => {
   registerVisible.value = true
+}
+
+const handleDialogOpen = () => {
+  // 重置表单
+  loginForm.value = {
+    username: "",
+    password: "",
+    rememberMe: false,
+    code: "",
+    uuid: ""
+  }
+  // 获取cookie
+  getCookie()
+  // 延迟获取验证码，确保DOM已经渲染完成
+  nextTick(() => {
+    setTimeout(() => {
+      getCode()
+    }, 200)
+  })
+}
+
+const getCode = () => {
+  getCodeImg().then(res => {
+    captchaEnabled.value = res.captchaEnabled === undefined ? true : res.captchaEnabled
+    if (captchaEnabled.value) {
+      codeUrl.value = "data:image/gif;base64," + res.img
+      loginForm.value.uuid = res.uuid
+      registerForm.value.uuid = res.uuid
+    }
+  })
 }
 
 const handleLogin = () => {
@@ -342,7 +376,7 @@ const handleLogin = () => {
         return userStore.getInfo()
       }).then(() => {
         ElMessage.success('登录成功')
-        loginVisible.value = false
+        userStore.loginVisible = false
         // 重置表单
         loginForm.value = {
           username: "",
@@ -373,17 +407,6 @@ const handleRegister = () => {
       }).catch(() => {
         registerLoading.value = false
       })
-    }
-  })
-}
-
-function getCode() {
-  getCodeImg().then(res => {
-    captchaEnabled.value = res.captchaEnabled === undefined ? true : res.captchaEnabled
-    if (captchaEnabled.value) {
-      codeUrl.value = "data:image/gif;base64," + res.img
-      loginForm.value.uuid = res.uuid
-      registerForm.value.uuid = res.uuid
     }
   })
 }
@@ -426,9 +449,9 @@ watch(() => userStore.token, (newVal) => {
 
 <style lang="scss" scoped>
 .front-container {
-  min-height: 100vh;
   display: flex;
   flex-direction: column;
+  min-height: 100vh;
 }
 
 .front-header {
@@ -602,9 +625,13 @@ watch(() => userStore.token, (newVal) => {
 
 .custom-dialog {
   :deep(.el-dialog) {
+    position: fixed;
+    margin: 0;
+    right: 20px;
+    top: 80px;
     border-radius: 8px;
     overflow: hidden;
-    box-shadow: 0 12px 32px 4px rgba(0, 0, 0, 0.04), 0 8px 20px rgba(0, 0, 0, 0.08);
+    box-shadow: 0 12px 32px 4px rgba(0, 0, 0, 0.1), 0 8px 20px rgba(0, 0, 0, 0.08);
     
     .el-dialog__header {
       margin: 0;
@@ -738,7 +765,7 @@ watch(() => userStore.token, (newVal) => {
   
   &:hover {
     transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(64, 158, 255, 0.3);
+    box-shadow: 0 4px 12px 4px rgba(64, 158, 255, 0.3), 0 0 6px rgba(64, 158, 255, 0.2);
   }
   
   &:active {

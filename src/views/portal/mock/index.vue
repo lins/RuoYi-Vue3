@@ -8,7 +8,7 @@
     </div> -->
 
     <div class="section-title">
-      <h2>模拟测试</h2>
+      <h2>真题测试</h2>
       <p>为您提供全面的信息技术能力测评</p>
     </div>
     
@@ -169,8 +169,8 @@ const goToDetail = (type) => {
     transform: translateY(-6px);
     box-shadow: 0 8px 30px rgba(64, 158, 255, 0.15);
     
-    .exam-logo img {
-      transform: scale(1.08);
+    .exam-info h3 {
+      color: var(--el-color-primary);
     }
   }
 }
@@ -201,6 +201,7 @@ const goToDetail = (type) => {
     color: #333;
     margin-bottom: 10px;
     line-height: 1.4;
+    transition: color 0.3s ease;
   }
   
   .exam-code {

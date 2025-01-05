@@ -12,9 +12,18 @@ const useUserStore = defineStore(
       name: '',
       avatar: '',
       roles: [],
-      permissions: []
+      permissions: [],
+      loginVisible: false
     }),
     actions: {
+      // 显示登录弹窗
+      showLogin() {
+        this.loginVisible = true
+      },
+      // 隐藏登录弹窗
+      hideLogin() {
+        this.loginVisible = false
+      },
       // 登录
       login(userInfo) {
         const username = userInfo.username.trim()

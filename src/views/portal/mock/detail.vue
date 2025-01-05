@@ -3,7 +3,7 @@
     <div class="breadcrumb">
       <el-breadcrumb separator="/">
         <el-breadcrumb-item :to="{ path: '/' }">首页</el-breadcrumb-item>
-        <el-breadcrumb-item :to="{ path: '/mock' }">模拟测试</el-breadcrumb-item>
+        <el-breadcrumb-item :to="{ path: '/mock' }">真题测试</el-breadcrumb-item>
         <el-breadcrumb-item>{{ examInfo.title }}</el-breadcrumb-item>
       </el-breadcrumb>
     </div>
@@ -80,8 +80,8 @@ const examInfo = ref({
     title: 'CCF CSP软件能力认证（CSP-J/S）',
     description: '中国计算机学会软件能力等级认证',
     items: [
-      { title: '入门级 C++软件能力认证', description: 'C++编程基础知识与入门级应用开发', type: 'cpp' },
-      { title: '提高级 C++软件能力认证', description: '进阶级C++编程与算法设计能力认证', type: 'cpp' },
+      { title: '入门级 C++软件能力认证', description: 'C++编程基础知识与入门级应用开发', type: 's_cpp' },
+      { title: '提高级 C++软件能力认证', description: '进阶级C++编程与算法设计能力认证', type: 'j_cpp' },
       { title: '北京中小学信息学能力测评', description: '面向北京地区的信息学专项能力测评', type: 'bcsp-x' }
     ]
   },
@@ -139,9 +139,9 @@ onMounted(() => {
 }
 
 .breadcrumb {
-  margin-bottom: 24px;
-  padding: 8px 0;
-  border-bottom: 1px solid #eee;
+  // margin-bottom: 24px;
+  // padding: 8px 0;
+  // border-bottom: 1px solid #eee;
 }
 
 .section-title {
