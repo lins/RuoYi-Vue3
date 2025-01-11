@@ -42,3 +42,12 @@ export function delExamRecord(id) {
     method: 'delete'
   })
 }
+
+// 提交考试
+export function submitExamRecord(data) {
+  return request({
+    url: '/exam/record/submit',
+    method: 'post',
+    data: data
+  })
+}

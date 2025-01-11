@@ -42,3 +42,11 @@ export function delExamPaper(id) {
     method: 'delete'
   })
 }
+
+// 查询试卷的试题列表
+export function listExamQuestions(paperId) {
+  return request({
+    url: '/exam/question/paper/' + paperId,
+    method: 'get'
+  })
+}

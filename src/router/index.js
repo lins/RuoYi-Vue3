@@ -83,6 +83,17 @@ export const constantRoutes = [
         component: () => import('@/views/portal/mock/subDetail.vue'),
         name: 'MockSubDetail',
       },
+      // 添加试卷预览和考试页面路由
+      {
+        path: 'mock/:type/:subtype/preview/:id',
+        component: () => import('@/views/portal/mock/preview.vue'),
+        name: 'ExamPreview',
+      },
+      {
+        path: 'mock/:type/:subtype/test/:id',
+        component: () => import('@/views/portal/mock/test.vue'),
+        name: 'ExamTest',
+      }
     ]
   },
   {
