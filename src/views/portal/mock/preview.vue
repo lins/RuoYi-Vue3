@@ -22,7 +22,7 @@
     <div class="exam-content">
       <!-- 单选题 -->
       <div v-if="singleChoiceQuestions.length > 0" class="question-section">
-        <h3>一、单选题（每题{{ singleChoiceQuestions[0].questionScore }}分，共{{ singleChoiceQuestions.length }}题）</h3>
+        <h3>{{ getQuestionTypeIndex(1) }}、单选题（每题{{ singleChoiceQuestions[0].questionScore }}分，共{{ singleChoiceQuestions.length }}题）</h3>
         <div v-for="(question, index) in singleChoiceQuestions" :key="question.id" class="question-item">
           <div class="question-title">
             {{ index + 1 }}. {{ question.questionText }}
@@ -54,7 +54,7 @@
 
       <!-- 多选题 -->
       <div v-if="multiChoiceQuestions.length > 0" class="question-section">
-        <h3>二、多选题（每题{{ multiChoiceQuestions[0].questionScore }}分，共{{ multiChoiceQuestions.length }}题）</h3>
+        <h3>{{ getQuestionTypeIndex(2) }}、多选题（每题{{ multiChoiceQuestions[0].questionScore }}分，共{{ multiChoiceQuestions.length }}题）</h3>
         <div v-for="(question, index) in multiChoiceQuestions" :key="question.id" class="question-item">
           <div class="question-title">
             {{ index + 1 }}. {{ question.questionText }}
@@ -86,7 +86,7 @@
 
       <!-- 判断题 -->
       <div v-if="judgmentQuestions.length > 0" class="question-section">
-        <h3>三、判断题（每题{{ judgmentQuestions[0].questionScore }}分，共{{ judgmentQuestions.length }}题）</h3>
+        <h3>{{ getQuestionTypeIndex(3) }}、判断题（每题{{ judgmentQuestions[0].questionScore }}分，共{{ judgmentQuestions.length }}题）</h3>
         <div v-for="(question, index) in judgmentQuestions" :key="question.id" class="question-item">
           <div class="question-title">
             {{ index + 1 }}. {{ question.questionText }}
@@ -110,7 +110,7 @@
 
       <!-- 编程题 -->
       <div v-if="programmingQuestions.length > 0" class="question-section">
-        <h3>四、编程题（共{{ programmingQuestions.length }}题）</h3>
+        <h3>{{ getQuestionTypeIndex(4) }}、编程题（共{{ programmingQuestions.length }}题）</h3>
         <div v-for="(question, index) in programmingQuestions" :key="question.id" class="question-item">
           <div class="question-title">
             {{ index + 1 }}. {{ question.questionText }}（{{ question.questionScore }}分）
@@ -185,6 +185,24 @@ const goBack = () => {
   router.go(-1)
 }
 
+// 获取题型序号（将阿拉伯数字转换为中文数字）
+const numberToChinese = (num) => {
+  const chineseNumbers = ['零', '一', '二', '三', '四', '五', '六', '七', '八', '九', '十']
+  return chineseNumbers[num]
+}
+
+// 计算题型的序号
+const getQuestionTypeIndex = (currentType) => {
+  let index = 1
+  
+  // 检查当前题型前面存在的题型数量
+  if (currentType > 1 && singleChoiceQuestions.value.length > 0) index++
+  if (currentType > 2 && multiChoiceQuestions.value.length > 0) index++
+  if (currentType > 3 && judgmentQuestions.value.length > 0) index++
+  
+  return numberToChinese(index)
+}
+
 onMounted(async () => {
   try {
     // 获取试卷信息
@@ -210,135 +228,230 @@ onMounted(async () => {
 .exam-preview {
   max-width: 1000px;
   margin: 0 auto;
-  padding: 20px;
-
+  padding: 40px 20px;
+  
+  .breadcrumb {
+    margin-bottom: 30px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid #eee;
+  }
+  
   .exam-header {
-    margin: 20px 0;
     text-align: center;
-
+    margin-bottom: 40px;
+    padding: 30px;
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
+    
     h2 {
-      margin-bottom: 10px;
-      font-size: 24px;
+      font-size: 28px;
+      font-weight: 600;
+      color: #2c3e50;
+      margin-bottom: 20px;
     }
-
+    
     .exam-info {
+      display: flex;
+      justify-content: center;
+      gap: 40px;
       color: #666;
+      
       span {
-        margin: 0 15px;
+        display: inline-flex;
+        align-items: center;
+        font-size: 15px;
+        
+        &::before {
+          content: '';
+          display: inline-block;
+          width: 4px;
+          height: 4px;
+          background: #409eff;
+          border-radius: 50%;
+          margin-right: 8px;
+        }
       }
     }
   }
-
+  
   .exam-content {
     background: #fff;
-    padding: 20px;
+    border-radius: 12px;
+    padding: 40px;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
+  }
+  
+  .question-section {
+    margin-bottom: 40px;
+    
+    &:last-child {
+      margin-bottom: 0;
+    }
+    
+    h3 {
+      font-size: 18px;
+      font-weight: 600;
+      color: #2c3e50;
+      margin-bottom: 24px;
+      padding-bottom: 12px;
+      border-bottom: 2px solid #eee;
+    }
+  }
+  
+  .question-item {
+    margin-bottom: 30px;
+    padding-bottom: 24px;
+    border-bottom: 1px dashed #eee;
+    
+    &:last-child {
+      margin-bottom: 0;
+      padding-bottom: 0;
+      border-bottom: none;
+    }
+  }
+  
+  .question-title {
+    font-size: 16px;
+    line-height: 1.6;
+    color: #2c3e50;
+    margin-bottom: 16px;
+    font-weight: 500;
+  }
+  
+  .options {
+    margin-bottom: 20px;
+  }
+  
+  .option-item {
+    display: flex;
+    margin-bottom: 12px;
+    line-height: 1.6;
+    
+    &:last-child {
+      margin-bottom: 0;
+    }
+    
+    .option-label {
+      flex-shrink: 0;
+      width: 30px;
+      color: #409eff;
+      font-weight: 500;
+    }
+    
+    .option-content {
+      color: #606266;
+    }
+  }
+  
+  .answer-analysis {
+    background: #f8f9fa;
+    padding: 16px 20px;
     border-radius: 8px;
-    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
-
-    .question-section {
-      margin-bottom: 30px;
-
-      h3 {
-        margin-bottom: 20px;
-        padding-bottom: 10px;
-        border-bottom: 1px solid #eee;
+    margin-top: 20px;
+    
+    p {
+      color: #606266;
+      line-height: 1.6;
+      margin-bottom: 8px;
+      
+      &:last-child {
+        margin-bottom: 0;
+      }
+      
+      strong {
+        color: #2c3e50;
+        font-weight: 500;
+        margin-right: 4px;
       }
     }
-
-    .question-item {
-      margin-bottom: 25px;
-      padding-bottom: 20px;
-      border-bottom: 1px dashed #eee;
-
-      &:last-child {
-        border-bottom: none;
-      }
-
-      .question-title {
-        margin-bottom: 15px;
-        font-weight: 500;
+    
+    pre {
+      margin: 12px 0;
+      padding: 16px;
+      background: #fff;
+      border-radius: 6px;
+      border: 1px solid #eee;
+      
+      code {
+        font-family: Monaco, Menlo, Consolas, monospace;
+        font-size: 14px;
         line-height: 1.6;
-      }
-
-      .options {
-        margin-bottom: 15px;
-
-        .option-item {
-          margin-bottom: 10px;
-          display: flex;
-          align-items: flex-start;
-
-          .option-label {
-            flex: none;
-            margin-right: 10px;
-            font-weight: 500;
-          }
-
-          .option-content {
-            flex: 1;
-          }
-        }
-      }
-
-      .answer-analysis {
-        margin-top: 15px;
-        padding: 15px;
-        background: #f8f9fa;
-        border-radius: 4px;
-
-        p {
-          margin-bottom: 10px;
-          &:last-child {
-            margin-bottom: 0;
-          }
-        }
-
-        pre {
-          margin: 10px 0;
-          padding: 15px;
-          background: #f1f1f1;
-          border-radius: 4px;
-          overflow-x: auto;
-
-          code {
-            font-family: monospace;
-            white-space: pre;
-          }
-        }
+        color: #333;
+        white-space: pre-wrap;
       }
     }
   }
-
+  
   .exam-actions {
-    margin-top: 30px;
-    text-align: center;
-
+    margin-top: 40px;
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    
     .el-button {
-      margin: 0 10px;
       min-width: 120px;
+      
+      &.el-button--primary {
+        background: linear-gradient(45deg, #409eff, #66b1ff);
+        border: none;
+        
+        &:hover {
+          background: linear-gradient(45deg, #66b1ff, #409eff);
+        }
+      }
     }
   }
 }
 
 @media (max-width: 768px) {
   .exam-preview {
-    padding: 10px;
-
+    padding: 20px 15px;
+    
     .exam-header {
+      padding: 24px 20px;
+      margin-bottom: 30px;
+      
       h2 {
-        font-size: 20px;
+        font-size: 24px;
+        margin-bottom: 16px;
       }
-
+      
       .exam-info {
+        flex-direction: column;
+        gap: 12px;
+        
         span {
-          display: block;
-          margin: 5px 0;
+          justify-content: center;
         }
       }
     }
-
+    
     .exam-content {
-      padding: 15px;
+      padding: 24px 20px;
+    }
+    
+    .question-section {
+      margin-bottom: 30px;
+      
+      h3 {
+        font-size: 16px;
+        margin-bottom: 20px;
+      }
+    }
+    
+    .question-item {
+      margin-bottom: 24px;
+      padding-bottom: 20px;
+    }
+    
+    .answer-analysis {
+      padding: 12px 16px;
+      
+      pre {
+        padding: 12px;
+        margin: 10px 0;
+      }
     }
   }
 }
